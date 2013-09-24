@@ -281,12 +281,15 @@ char varintEncode(unsigned char *out, uint64_t n) {
 #define my_bin2hex _blkmk_bin2hex
 
 static
-json_t *_blkmk_submit_jansson(blktemplate_t *tmpl, const unsigned char *data, unsigned int dataid, blknonce_t nonce, bool foreign) {
-	unsigned char blk[80 + 8 + 1000000];
+json_t *_blkmk_submit_jansson(blktemplate_t *tmpl, const unsigned char *data, unsigned int dataid, blknonce_t nonce, bool foreign, const unsigned char *extra, size_t extrasz) {
+	unsigned char blk[80 + 8 + 1000000 + extrasz];
 	memcpy(blk, data, 76);
 	*(uint32_t*)(&blk[76]) = htonl(nonce);
 	size_t offs = 80;
 	
+	memcpy(&blk[80], extra, extrasz);
+	offs += extrasz;
+
 	if (foreign || (!(tmpl->mutations & BMAb_TRUNCATE && !dataid)))
 	{
 		offs += varintEncode(&blk[offs], 1 + tmpl->txncount);
@@ -347,10 +350,10 @@ err:
 	return NULL;
 }
 
-json_t *blkmk_submit_jansson(blktemplate_t *tmpl, const unsigned char *data, unsigned int dataid, blknonce_t nonce) {
-	return _blkmk_submit_jansson(tmpl, data, dataid, nonce, false);
+json_t *blkmk_submit_jansson(blktemplate_t *tmpl, const unsigned char *data, unsigned int dataid, blknonce_t nonce, const unsigned char *extra, size_t extrasz) {
+	return _blkmk_submit_jansson(tmpl, data, dataid, nonce, false, extra, extrasz);
 }
 
 json_t *blkmk_submit_foreign_jansson(blktemplate_t *tmpl, const unsigned char *data, unsigned int dataid, blknonce_t nonce) {
-	return _blkmk_submit_jansson(tmpl, data, dataid, nonce, true);
+	return _blkmk_submit_jansson(tmpl, data, dataid, nonce, true, NULL, 0);
 }
