@@ -23,3 +23,5 @@ autom4te.cache
 config.*
 ii
 ar-lib
+old
+build
