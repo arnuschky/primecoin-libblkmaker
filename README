@@ -1,3 +1,11 @@
+== Primecoin version ==
+
+To install:
+
+./autogen
+make
+sudo make install
+
 Dependencies:
 	Jansson 2.0 with 'long long' support
 
